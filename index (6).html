@@ -1,0 +1,3628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Smart Disaster Management 2.0</title>
+
+<!-- PWA -->
+<link rel="manifest" id="manifestLink">
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:18px;
+    font-family:Arial,sans-serif;
+    background:#f4f7fb;
+    color:#172033;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:5px;
+}
+
+h2{
+    margin-top:28px;
+}
+
+h3{
+    margin-top:5px;
+}
+
+p{
+    text-align:center;
+    color:#667085;
+}
+
+hr{
+    border:0;
+    border-top:1px solid #ddd;
+    margin:25px 0;
+}
+
+.card{
+    background:white;
+    padding:18px;
+    margin-top:12px;
+    border-radius:16px;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:14px;
+    margin:7px 0;
+    border:1px solid #d9dee8;
+    border-radius:12px;
+    font-size:15px;
+}
+
+textarea{
+    resize:vertical;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin:7px 0;
+    border:0;
+    border-radius:12px;
+    background:#2563eb;
+    color:white;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.98);
+}
+
+.green{background:#16a34a}
+.blue{background:#0284c7}
+.dark{background:#475569}
+.brown{background:#92400e}
+.orange{background:#ea580c}
+.purple{background:#7c3aed}
+.red{background:#dc2626}
+.teal{background:#0f766e}
+.yellow{
+    background:#ca8a04;
+}
+
+.status{
+    margin-top:12px;
+    padding:14px;
+    border-radius:12px;
+    background:#f8fafc;
+    line-height:1.8;
+    word-break:break-word;
+}
+
+.safe{
+    color:#16a34a;
+    font-weight:bold;
+}
+
+.medium{
+    color:#d97706;
+    font-weight:bold;
+}
+
+.high{
+    color:#dc2626;
+    font-weight:bold;
+}
+
+.critical{
+    color:#991b1b;
+    font-weight:bold;
+}
+
+.preview{
+    width:100%;
+    max-height:250px;
+    object-fit:cover;
+    border-radius:12px;
+    margin-top:10px;
+    display:none;
+}
+
+.small{
+    font-size:13px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.stat{
+    padding:15px;
+    background:#f8fafc;
+    border-radius:12px;
+    text-align:center;
+}
+
+.stat strong{
+    display:block;
+    font-size:25px;
+    margin-bottom:5px;
+}
+
+.chatBox{
+    height:240px;
+    overflow-y:auto;
+    background:#f8fafc;
+    padding:12px;
+    border-radius:12px;
+    text-align:left;
+}
+
+.userMsg{
+    background:#dbeafe;
+    padding:10px;
+    margin:7px 0;
+    border-radius:10px;
+}
+
+.botMsg{
+    background:#dcfce7;
+    padding:10px;
+    margin:7px 0;
+    border-radius:10px;
+}
+
+.alertBox{
+    display:none;
+    padding:15px;
+    border-radius:12px;
+    background:#fee2e2;
+    color:#991b1b;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+#disasterMap{
+    width:100%;
+    height:380px;
+    border-radius:14px;
+    margin-top:12px;
+    background:#e5e7eb;
+}
+
+.progress{
+    width:100%;
+    height:14px;
+    background:#e5e7eb;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progressBar{
+    height:100%;
+    width:0%;
+    background:#16a34a;
+    transition:.4s;
+}
+
+.item{
+    padding:12px;
+    background:#f8fafc;
+    border-radius:10px;
+    margin:8px 0;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    background:#e2e8f0;
+}
+
+@media(max-width:650px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    body{
+        padding:12px;
+    }
+}
+</style>
+
+<!-- Leaflet Map -->
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+</head>
+
+<body>
+
+<h1>🌍 Smart Disaster Management 2.0</h1>
+
+<p>
+AI Powered Emergency, Disaster Response & Safety System
+</p>
+
+<div id="globalAlert" class="alertBox"></div>
+
+
+<!-- =====================================================
+LANGUAGE
+===================================================== -->
+
+<h2>🌐 Language</h2>
+
+<div class="card">
+
+<select id="languageSelect" onchange="changeLanguage()">
+
+<option value="en">English</option>
+
+<option value="ta">தமிழ்</option>
+
+</select>
+
+<div id="languageStatus" class="status">
+Language: English
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SMART ROUTE
+===================================================== -->
+
+<h2>🗺️ Smart Route Planning</h2>
+
+<div class="card">
+
+<input
+id="destination"
+type="text"
+placeholder="🎯 Enter Destination">
+
+<button onclick="openGoogleMaps()">
+🗺️ Open Google Maps
+</button>
+
+<button
+class="dark"
+onclick="openSatellite()">
+🛰️ Map Search
+</button>
+
+<div id="routeResult" class="status">
+Enter destination to open navigation.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+LOCATION
+===================================================== -->
+
+<h2>📍 My Location</h2>
+
+<div class="card">
+
+<button
+class="green"
+onclick="getLocation()">
+📍 Get My Location
+</button>
+
+<div id="location" class="status">
+Location not detected.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+WEATHER DASHBOARD
+===================================================== -->
+
+<h2>🌦️ Full Weather Dashboard</h2>
+
+<div class="card">
+
+<button
+class="blue"
+onclick="loadWeatherDashboard()">
+🌦️ Load Live Weather
+</button>
+
+<div id="weatherResult" class="status">
+📍 Get your location first.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+FLOOD
+===================================================== -->
+
+<h2>🌊 Flood Prediction</h2>
+
+<div class="card">
+
+<button
+class="blue"
+onclick="checkFloodRisk()">
+🌧️ Check Live Flood Risk
+</button>
+
+<div id="floodResult" class="status">
+📍 Get your location first.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+LANDSLIDE
+===================================================== -->
+
+<h2>🏔️ Landslide Risk</h2>
+
+<div class="card">
+
+<button
+class="brown"
+onclick="checkLandslideRisk()">
+🏔️ Check Landslide Risk
+</button>
+
+<div id="landslideResult" class="status">
+📍 Get your location first.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+ADVANCED AI RISK
+===================================================== -->
+
+<h2>🤖 Advanced AI Risk Analysis</h2>
+
+<div class="card">
+
+<button
+class="purple"
+onclick="runAIRiskAnalysis()">
+🤖 Analyze Disaster Risk
+</button>
+
+<div id="aiRiskResult" class="status">
+AI risk analysis not started.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+FOOD
+===================================================== -->
+
+<h2>🍱 Emergency Food Supply</h2>
+
+<div class="card">
+
+<input
+id="foodStock"
+type="number"
+min="0"
+placeholder="📦 Food Stock (kg)">
+
+<input
+id="peopleCount"
+type="number"
+min="1"
+placeholder="👥 Number of People">
+
+<input
+id="dailyFood"
+type="number"
+min="0.1"
+step="0.1"
+placeholder="🍚 Food per Person / Day (kg)">
+
+<button
+class="green"
+onclick="checkFoodRisk()">
+🍱 Check Food Supply
+</button>
+
+<div id="foodResult" class="status">
+📦 Enter food details.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SUPPLIES
+===================================================== -->
+
+<h2>📦 Emergency Supply Management</h2>
+
+<div class="card">
+
+<input
+id="waterStock"
+type="number"
+min="0"
+placeholder="💧 Water Stock (Litres)">
+
+<input
+id="medicineStock"
+type="number"
+min="0"
+placeholder="💊 Medicine Units">
+
+<input
+id="blanketStock"
+type="number"
+min="0"
+placeholder="🛏️ Blankets">
+
+<input
+id="supplyPeople"
+type="number"
+min="1"
+placeholder="👥 Number of People">
+
+<button
+class="orange"
+onclick="checkSupplies()">
+📦 Check Emergency Supplies
+</button>
+
+<div id="supplyResult" class="status">
+📦 Enter supply details.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+LIVE DISASTER MAP
+===================================================== -->
+
+<h2>🗺️ Live Disaster Map</h2>
+
+<div class="card">
+
+<button
+class="red"
+onclick="loadDisasterMap()">
+🗺️ Load Disaster Map
+</button>
+
+<div id="disasterMap"></div>
+
+<div id="mapResult" class="status">
+Map not loaded.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+EMERGENCY ALERT
+===================================================== -->
+
+<h2>🔔 Emergency Alert System</h2>
+
+<div class="card">
+
+<button
+class="red"
+onclick="enableNotifications()">
+🔔 Enable Notifications
+</button>
+
+<button
+class="yellow"
+onclick="testEmergencyAlert()">
+⚠️ Test Emergency Alert
+</button>
+
+<div id="alertResult" class="status">
+Emergency alerts are ready.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SAFE ZONE
+===================================================== -->
+
+<h2>🏠 Safe Zone & Evacuation</h2>
+
+<div class="card">
+
+<button
+class="green"
+onclick="findSafeZone()">
+🏠 Find Safe Zone
+</button>
+
+<button
+class="blue"
+onclick="openEvacuationRoute()">
+🧭 Open Evacuation Route
+</button>
+
+<div id="safeZoneResult" class="status">
+Safe zone not selected.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+ACCESSIBILITY
+===================================================== -->
+
+<h2>♿ Accessibility Intelligence</h2>
+
+<div class="card">
+
+<button onclick="openAccessibleHospital()">
+🏥 Accessible Hospital
+</button>
+
+<button onclick="openAccessibleShelter()">
+🏠 Accessible Shelter
+</button>
+
+<button onclick="openAccessibleRoute()">
+♿ Accessible Route
+</button>
+
+<div id="accessResult" class="status">
+Select an accessibility service.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+SOS
+===================================================== -->
+
+<h2>🚨 Emergency Response & SOS</h2>
+
+<div class="card">
+
+<button
+class="red"
+onclick="sendSOS()">
+🆘 SOS — Call 112
+</button>
+
+<button onclick="openEmergencyHospital()">
+🏥 Find Nearest Hospital
+</button>
+
+<button onclick="openEmergencyShelter()">
+🏠 Find Emergency Shelter
+</button>
+
+<button onclick="shareEmergencyLocation()">
+📍 Share My Location
+</button>
+
+<div id="emergencyResult" class="status">
+Emergency services ready.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+RESCUE REQUEST
+===================================================== -->
+
+<h2>🚑 Rescue Request System</h2>
+
+<div class="card">
+
+<select id="rescueType">
+
+<option value="">
+Select Emergency Type
+</option>
+
+<option value="Medical Emergency">
+🏥 Medical Emergency
+</option>
+
+<option value="Flood Rescue">
+🌊 Flood Rescue
+</option>
+
+<option value="Trapped Person">
+🚨 Trapped Person
+</option>
+
+<option value="Food Emergency">
+🍱 Food Emergency
+</option>
+
+<option value="Water Emergency">
+💧 Water Emergency
+</option>
+
+</select>
+
+<input
+id="rescuePeople"
+type="number"
+min="1"
+placeholder="👥 Number of People">
+
+<select id="rescuePriority">
+
+<option value="HIGH">🔴 High Priority</option>
+
+<option value="MEDIUM">🟠 Medium Priority</option>
+
+<option value="LOW">🟢 Low Priority</option>
+
+</select>
+
+<textarea
+id="rescueDescription"
+rows="4"
+placeholder="📝 Describe the emergency..."></textarea>
+
+<button
+class="red"
+onclick="submitRescueRequest()">
+🚑 Send Rescue Request
+</button>
+
+<div id="rescueResult" class="status">
+No rescue request created.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+ROAD REPORT
+===================================================== -->
+
+<h2>📱 Citizen Road-Problem Reporting</h2>
+
+<div class="card">
+
+<select id="problemType">
+
+<option value="">
+Select Problem
+</option>
+
+<option value="Pothole">
+🕳️ Pothole
+</option>
+
+<option value="Flooded Road">
+🌊 Flooded Road
+</option>
+
+<option value="Damaged Road">
+🚧 Damaged Road
+</option>
+
+<option value="Signal Problem">
+🚦 Signal Problem
+</option>
+
+<option value="Street Light Problem">
+💡 Street Light Problem
+</option>
+
+</select>
+
+<input
+id="reportPhoto"
+type="file"
+accept="image/*"
+capture="environment"
+onchange="previewReportPhoto()">
+
+<img
+id="photoPreview"
+class="preview"
+alt="Road problem photo">
+
+<textarea
+id="reportDescription"
+rows="4"
+placeholder="📝 Describe the road problem..."></textarea>
+
+<button
+class="green"
+onclick="getReportLocation()">
+📍 Get Problem Location
+</button>
+
+<div id="reportLocation" class="status">
+Location not detected.
+</div>
+
+<button
+class="purple"
+onclick="submitRoadReport()">
+🚨 Submit Road Report
+</button>
+
+<div id="reportResult" class="status">
+Report not submitted.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+RELIEF TRACKING
+===================================================== -->
+
+<h2>📦 Relief Distribution Tracking</h2>
+
+<div class="card">
+
+<input
+id="reliefArea"
+type="text"
+placeholder="📍 Relief Area">
+
+<select id="reliefType">
+
+<option value="Food">🍱 Food</option>
+
+<option value="Water">💧 Water</option>
+
+<option value="Medicine">💊 Medicine</option>
+
+<option value="Blankets">🛏️ Blankets</option>
+
+</select>
+
+<input
+id="reliefQuantity"
+type="number"
+min="1"
+placeholder="📦 Quantity">
+
+<button
+class="orange"
+onclick="addReliefDistribution()">
+📦 Add Relief Distribution
+</button>
+
+<div id="reliefResult" class="status">
+No relief distribution records.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+HOSPITAL STATUS
+===================================================== -->
+
+<h2>🏥 Hospital Capacity & Status</h2>
+
+<div class="card">
+
+<button
+class="red"
+onclick="loadHospitalStatus()">
+🏥 Check Hospital Status
+</button>
+
+<div id="hospitalStatus" class="status">
+Hospital status not loaded.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+HOSPITAL / SHELTER / RESCUE FINDER
+===================================================== -->
+
+<h2>🏥 Hospital • Shelter • Rescue Finder</h2>
+
+<div class="card">
+
+<button
+class="red"
+onclick="findHospital()">
+🏥 Find Nearby Hospital
+</button>
+
+<button
+class="green"
+onclick="findShelter()">
+🏠 Find Emergency Shelter
+</button>
+
+<button
+class="orange"
+onclick="findRescueCenter()">
+🚑 Find Rescue Center
+</button>
+
+<button
+class="blue"
+onclick="openCurrentLocationMap()">
+📍 Open My Location
+</button>
+
+<div id="finderResult" class="status">
+Choose an emergency service.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+AI ASSISTANT
+===================================================== -->
+
+<h2>🤖 AI Emergency Assistant</h2>
+
+<div class="card">
+
+<div id="chatBox" class="chatBox">
+
+<div class="botMsg">
+🤖 Hello! Ask me about flood, hospital,
+shelter, SOS, route, supplies, rescue,
+weather or evacuation.
+</div>
+
+</div>
+
+<input
+id="chatInput"
+type="text"
+placeholder="💬 Type your emergency question..."
+onkeydown="handleChatKey(event)">
+
+<button onclick="sendChatMessage()">
+🤖 Ask Assistant
+</button>
+
+<button
+class="blue"
+onclick="startVoiceInput()">
+🎙️ Voice Input
+</button>
+
+<button
+class="green"
+onclick="speakLastResponse()">
+🔊 Speak Response
+</button>
+
+</div>
+
+
+<!-- =====================================================
+ADMIN DASHBOARD
+===================================================== -->
+
+<h2>📊 Admin Disaster Dashboard</h2>
+
+<div class="card">
+
+<button
+class="purple"
+onclick="loadAdminDashboard()">
+📊 Refresh Dashboard
+</button>
+
+<div class="grid">
+
+<div class="stat">
+<strong id="statReports">0</strong>
+Road Reports
+</div>
+
+<div class="stat">
+<strong id="statRescue">0</strong>
+Rescue Requests
+</div>
+
+<div class="stat">
+<strong id="statRelief">0</strong>
+Relief Records
+</div>
+
+<div class="stat">
+<strong id="statAlerts">0</strong>
+Alerts
+</div>
+
+</div>
+
+<div id="adminDetails" class="status">
+Dashboard not loaded.
+</div>
+
+</div>
+
+
+<!-- =====================================================
+OFFLINE / PWA
+===================================================== -->
+
+<h2>📱 Offline Emergency Mode</h2>
+
+<div class="card">
+
+<button
+class="teal"
+onclick="installPWA()">
+📱 Install Emergency App
+</button>
+
+<button
+class="dark"
+onclick="checkOfflineStatus()">
+📡 Check Offline Status
+</button>
+
+<div id="offlineResult" class="status">
+Checking app status...
+</div>
+
+</div>
+
+
+<hr>
+
+<p class="small">
+🌍 Smart Disaster Management 2.0<br>
+Emergency technology prototype
+</p>
+
+
+<!-- =====================================================
+LEAFLET
+===================================================== -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+/* =====================================================
+GLOBAL VARIABLES
+===================================================== */
+
+let currentLatitude = null;
+let currentLongitude = null;
+
+let reportLatitude = null;
+let reportLongitude = null;
+
+let lastBotResponse =
+"Hello! I am your Emergency Assistant.";
+
+let disasterMap = null;
+
+let mapMarkers = [];
+
+let lastWeather = {
+    temperature:0,
+    rain:0,
+    precipitation:0,
+    totalRain:0,
+    probability:0
+};
+
+let appLanguage =
+localStorage.getItem("appLanguage") || "en";
+
+
+/* =====================================================
+STORAGE
+===================================================== */
+
+function getStoredArray(key){
+
+    try{
+
+        return JSON.parse(
+            localStorage.getItem(key) || "[]"
+        );
+
+    }catch(error){
+
+        return [];
+
+    }
+
+}
+
+function saveStoredArray(key,data){
+
+    localStorage.setItem(
+        key,
+        JSON.stringify(data)
+    );
+
+}
+
+
+/* =====================================================
+LOCATION
+===================================================== */
+
+function getLocation(){
+
+    if(!navigator.geolocation){
+
+        alert("❌ GPS is not supported.");
+
+        return;
+    }
+
+    document.getElementById("location").innerHTML =
+    "📍 Getting your location...";
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            currentLatitude =
+            position.coords.latitude;
+
+            currentLongitude =
+            position.coords.longitude;
+
+            document.getElementById("location").innerHTML =
+
+            "📍 <b>Location Detected</b>" +
+            "<br><br>" +
+
+            "Latitude: " +
+            currentLatitude.toFixed(6) +
+
+            "<br>" +
+
+            "Longitude: " +
+            currentLongitude.toFixed(6) +
+
+            "<br>" +
+
+            "Accuracy: " +
+            Math.round(position.coords.accuracy) +
+            " metres";
+
+            loadWeatherDashboard();
+
+        },
+
+        function(){
+
+            document.getElementById("location").innerHTML =
+            "❌ Unable to get location.<br>" +
+            "Please allow GPS permission.";
+
+        },
+
+        {
+            enableHighAccuracy:true,
+            timeout:15000,
+            maximumAge:0
+        }
+
+    );
+}
+
+
+/* =====================================================
+GOOGLE MAPS
+===================================================== */
+
+function openGoogleMaps(){
+
+    let destination =
+    document.getElementById("destination")
+    .value.trim();
+
+    if(!destination){
+
+        alert("🎯 Please enter destination.");
+
+        return;
+    }
+
+    let url =
+    "https://www.google.com/maps/dir/?api=1" +
+    "&destination=" +
+    encodeURIComponent(destination) +
+    "&travelmode=driving";
+
+    document.getElementById("routeResult").innerHTML =
+    "🗺️ Opening Google Maps...";
+
+    window.open(url,"_blank");
+}
+
+
+function openSatellite(){
+
+    let destination =
+    document.getElementById("destination")
+    .value.trim();
+
+    if(!destination){
+
+        alert("🎯 Please enter destination.");
+
+        return;
+    }
+
+    window.open(
+        "https://www.google.com/maps/search/" +
+        encodeURIComponent(destination),
+        "_blank"
+    );
+}
+
+
+/* =====================================================
+WEATHER DASHBOARD
+===================================================== */
+
+async function loadWeatherDashboard(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        document.getElementById("weatherResult").innerHTML =
+        "📍 Please get your location first.";
+
+        return;
+    }
+
+    let result =
+    document.getElementById("weatherResult");
+
+    result.innerHTML =
+    "📡 Loading live weather...";
+
+    try{
+
+        let url =
+        "https://api.open-meteo.com/v1/forecast" +
+
+        "?latitude=" +
+        currentLatitude +
+
+        "&longitude=" +
+        currentLongitude +
+
+        "&current=" +
+        "temperature_2m," +
+        "relative_humidity_2m," +
+        "apparent_temperature," +
+        "precipitation," +
+        "rain," +
+        "wind_speed_10m," +
+        "weather_code" +
+
+        "&hourly=" +
+        "precipitation," +
+        "precipitation_probability," +
+        "temperature_2m" +
+
+        "&forecast_days=3" +
+
+        "&timezone=auto";
+
+        let response =
+        await fetch(url);
+
+        if(!response.ok){
+
+            throw new Error("Weather error");
+
+        }
+
+        let data =
+        await response.json();
+
+        let current =
+        data.current;
+
+        let hourlyRain =
+        data.hourly.precipitation || [];
+
+        let probability =
+        data.hourly.precipitation_probability || [];
+
+        let totalRain = 0;
+        let maxProbability = 0;
+
+        for(let i=0;i<24 && i<hourlyRain.length;i++){
+
+            totalRain +=
+            Number(hourlyRain[i] || 0);
+
+        }
+
+        for(let i=0;i<24 && i<probability.length;i++){
+
+            maxProbability =
+            Math.max(
+                maxProbability,
+                Number(probability[i] || 0)
+            );
+
+        }
+
+        lastWeather = {
+
+            temperature:
+            Number(current.temperature_2m || 0),
+
+            rain:
+            Number(current.rain || 0),
+
+            precipitation:
+            Number(current.precipitation || 0),
+
+            totalRain:
+            totalRain,
+
+            probability:
+            maxProbability
+
+        };
+
+        let code =
+        Number(current.weather_code);
+
+        result.innerHTML =
+
+        "🌡️ Temperature: " +
+        current.temperature_2m +
+        " °C" +
+
+        "<br>🌡️ Feels Like: " +
+        current.apparent_temperature +
+        " °C" +
+
+        "<br>💧 Humidity: " +
+        current.relative_humidity_2m +
+        "%" +
+
+        "<br>🌧️ Rain: " +
+        current.rain +
+        " mm" +
+
+        "<br>💦 Precipitation: " +
+        current.precipitation +
+        " mm" +
+
+        "<br>💨 Wind: " +
+        current.wind_speed_10m +
+        " km/h" +
+
+        "<br>☔ Next 24h Rain: " +
+        totalRain.toFixed(1) +
+        " mm" +
+
+        "<br>☔ Rain Probability: " +
+        maxProbability +
+        "%" +
+
+        "<br>🌤️ Weather Code: " +
+        code +
+
+        "<br><br>" +
+
+        "✅ Live weather loaded successfully.";
+
+        runAIRiskAnalysis();
+
+    }
+
+    catch(error){
+
+        result.innerHTML =
+        "❌ Weather data unavailable. " +
+        "Check internet connection.";
+
+    }
+}
+
+
+/* =====================================================
+FLOOD
+===================================================== */
+
+async function checkFloodRisk(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Please get location first.");
+
+        return;
+    }
+
+    let result =
+    document.getElementById("floodResult");
+
+    result.innerHTML =
+    "📡 Collecting rainfall data...";
+
+    try{
+
+        let url =
+        "https://api.open-meteo.com/v1/forecast" +
+
+        "?latitude=" +
+        currentLatitude +
+
+        "&longitude=" +
+        currentLongitude +
+
+        "&current=temperature_2m,precipitation,rain" +
+
+        "&hourly=precipitation,precipitation_probability" +
+
+        "&forecast_hours=12" +
+
+        "&timezone=auto";
+
+        let response =
+        await fetch(url);
+
+        let data =
+        await response.json();
+
+        let rain =
+        data.hourly.precipitation || [];
+
+        let probability =
+        data.hourly.precipitation_probability || [];
+
+        let totalRain = 0;
+        let maxProbability = 0;
+
+        rain.forEach(function(value){
+
+            totalRain += Number(value || 0);
+
+        });
+
+        probability.forEach(function(value){
+
+            maxProbability =
+            Math.max(
+                maxProbability,
+                Number(value || 0)
+            );
+
+        });
+
+        let risk = "LOW";
+        let className = "safe";
+
+        if(
+            totalRain >= 30 ||
+            maxProbability >= 80
+        ){
+
+            risk = "HIGH";
+            className = "high";
+
+        }else if(
+            totalRain >= 10 ||
+            maxProbability >= 50
+        ){
+
+            risk = "MEDIUM";
+            className = "medium";
+
+        }
+
+        result.innerHTML =
+
+        "🌧️ Current Rain: " +
+        data.current.rain +
+        " mm" +
+
+        "<br>💧 Precipitation: " +
+        data.current.precipitation +
+        " mm" +
+
+        "<br>📊 Next 12h Rain: " +
+        totalRain.toFixed(1) +
+        " mm" +
+
+        "<br>☔ Max Probability: " +
+        maxProbability +
+        "%" +
+
+        "<br><br>" +
+
+        "🌊 Flood Risk: " +
+
+        "<span class='" +
+        className +
+        "'>" +
+        risk +
+        "</span>";
+
+        if(risk === "HIGH"){
+
+            showEmergencyAlert(
+                "🌊 HIGH FLOOD RISK detected."
+            );
+
+        }
+
+    }catch(error){
+
+        result.innerHTML =
+        "❌ Unable to load flood data.";
+
+    }
+
+}
+
+
+/* =====================================================
+LANDSLIDE
+===================================================== */
+
+async function checkLandslideRisk(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Please get location first.");
+
+        return;
+    }
+
+    let result =
+    document.getElementById("landslideResult");
+
+    result.innerHTML =
+    "📡 Checking rainfall...";
+
+    try{
+
+        let url =
+        "https://api.open-meteo.com/v1/forecast" +
+
+        "?latitude=" +
+        currentLatitude +
+
+        "&longitude=" +
+        currentLongitude +
+
+        "&hourly=precipitation" +
+
+        "&forecast_hours=24" +
+
+        "&timezone=auto";
+
+        let response =
+        await fetch(url);
+
+        let data =
+        await response.json();
+
+        let rain =
+        data.hourly.precipitation || [];
+
+        let totalRain = 0;
+
+        rain.forEach(function(value){
+
+            totalRain +=
+            Number(value || 0);
+
+        });
+
+        let risk = "LOW";
+        let className = "safe";
+
+        if(totalRain >= 50){
+
+            risk = "HIGH";
+            className = "high";
+
+        }else if(totalRain >= 20){
+
+            risk = "MEDIUM";
+            className = "medium";
+
+        }
+
+        result.innerHTML =
+
+        "🏔️ 24h Rainfall: " +
+        totalRain.toFixed(1) +
+        " mm" +
+
+        "<br><br>" +
+
+        "🏔️ Landslide Risk: " +
+
+        "<span class='" +
+        className +
+        "'>" +
+        risk +
+        "</span>";
+
+    }catch(error){
+
+        result.innerHTML =
+        "❌ Rainfall data unavailable.";
+
+    }
+
+}
+
+
+/* =====================================================
+AI RISK ANALYSIS
+===================================================== */
+
+function runAIRiskAnalysis(){
+
+    let rain =
+    Number(lastWeather.totalRain || 0);
+
+    let probability =
+    Number(lastWeather.probability || 0);
+
+    let temperature =
+    Number(lastWeather.temperature || 0);
+
+    let score = 0;
+
+    let factors = [];
+
+    if(rain >= 50){
+
+        score += 40;
+        factors.push("Very high rainfall");
+
+    }else if(rain >= 20){
+
+        score += 25;
+        factors.push("Heavy rainfall");
+
+    }else if(rain >= 10){
+
+        score += 10;
+        factors.push("Moderate rainfall");
+
+    }
+
+    if(probability >= 80){
+
+        score += 25;
+        factors.push("High rain probability");
+
+    }else if(probability >= 50){
+
+        score += 15;
+        factors.push("Moderate rain probability");
+
+    }
+
+    if(temperature >= 40){
+
+        score += 15;
+        factors.push("Very high temperature");
+
+    }
+
+    let risk = "LOW";
+    let className = "safe";
+    let action =
+    "Normal monitoring is sufficient.";
+
+    if(score >= 60){
+
+        risk = "CRITICAL";
+        className = "critical";
+
+        action =
+        "Prepare emergency response and consider evacuation.";
+
+    }else if(score >= 40){
+
+        risk = "HIGH";
+        className = "high";
+
+        action =
+        "Avoid flood-prone areas and prepare emergency supplies.";
+
+    }else if(score >= 20){
+
+        risk = "MEDIUM";
+        className = "medium";
+
+        action =
+        "Monitor weather and stay prepared.";
+
+    }
+
+    document.getElementById(
+        "aiRiskResult"
+    ).innerHTML =
+
+    "🤖 AI Risk Score: " +
+    score +
+    "/100" +
+
+    "<br>🚨 Risk Level: " +
+
+    "<span class='" +
+    className +
+    "'>" +
+    risk +
+    "</span>" +
+
+    "<br>📌 Factors: " +
+
+    (
+        factors.length
+        ? factors.join(", ")
+        : "No major weather factors"
+    ) +
+
+    "<br>🛡️ Recommended Action: " +
+    action;
+
+    if(score >= 60){
+
+        showEmergencyAlert(
+            "🚨 CRITICAL AI DISASTER RISK. Take precautions."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+FOOD
+===================================================== */
+
+function checkFoodRisk(){
+
+    let stock =
+    Number(document.getElementById("foodStock").value);
+
+    let people =
+    Number(document.getElementById("peopleCount").value);
+
+    let daily =
+    Number(document.getElementById("dailyFood").value);
+
+    if(
+        stock <= 0 ||
+        people <= 0 ||
+        daily <= 0
+    ){
+
+        alert("⚠️ Enter valid food details.");
+
+        return;
+    }
+
+    let requirement =
+    people * daily;
+
+    let days =
+    stock / requirement;
+
+    let risk;
+    let className;
+
+    if(days < 1){
+
+        risk = "CRITICAL";
+        className = "critical";
+
+    }else if(days < 3){
+
+        risk = "HIGH";
+        className = "high";
+
+    }else if(days < 7){
+
+        risk = "MEDIUM";
+        className = "medium";
+
+    }else{
+
+        risk = "SAFE";
+        className = "safe";
+
+    }
+
+    document.getElementById("foodResult").innerHTML =
+
+    "📦 Food Stock: " +
+    stock.toFixed(1) +
+    " kg" +
+
+    "<br>👥 People: " +
+    people +
+
+    "<br>🍚 Daily Requirement: " +
+    requirement.toFixed(1) +
+    " kg" +
+
+    "<br>📅 Available: " +
+    days.toFixed(1) +
+    " days" +
+
+    "<br><br>" +
+
+    "🍱 Status: " +
+
+    "<span class='" +
+    className +
+    "'>" +
+    risk +
+    "</span>";
+
+}
+
+
+/* =====================================================
+SUPPLIES
+===================================================== */
+
+function checkSupplies(){
+
+    let water =
+    Number(document.getElementById("waterStock").value);
+
+    let medicine =
+    Number(document.getElementById("medicineStock").value);
+
+    let blankets =
+    Number(document.getElementById("blanketStock").value);
+
+    let people =
+    Number(document.getElementById("supplyPeople").value);
+
+    if(
+        people <= 0 ||
+        water < 0 ||
+        medicine < 0 ||
+        blankets < 0
+    ){
+
+        alert("⚠️ Enter valid supply details.");
+
+        return;
+    }
+
+    let waterDays =
+    water / (people * 3);
+
+    let medicineDays =
+    medicine / (people * .1);
+
+    let waterStatus =
+    waterDays < 1
+    ? "CRITICAL"
+    : waterDays < 3
+    ? "LOW"
+    : "SAFE";
+
+    let medicineStatus =
+    medicineDays < 1
+    ? "CRITICAL"
+    : medicineDays < 3
+    ? "LOW"
+    : "SAFE";
+
+    let blanketStatus =
+    blankets < people
+    ? "LOW"
+    : "SAFE";
+
+    let overall = "SAFE";
+
+    if(
+        waterStatus === "CRITICAL" ||
+        medicineStatus === "CRITICAL"
+    ){
+
+        overall = "CRITICAL";
+
+    }else if(
+        waterStatus === "LOW" ||
+        medicineStatus === "LOW" ||
+        blanketStatus === "LOW"
+    ){
+
+        overall = "LOW";
+
+    }
+
+    let className =
+    overall === "CRITICAL"
+    ? "critical"
+    : overall === "LOW"
+    ? "medium"
+    : "safe";
+
+    document.getElementById(
+        "supplyResult"
+    ).innerHTML =
+
+    "💧 Water: " +
+    waterDays.toFixed(1) +
+    " days — " +
+    waterStatus +
+
+    "<br>💊 Medicine: " +
+    medicineDays.toFixed(1) +
+    " days — " +
+    medicineStatus +
+
+    "<br>🛏️ Blankets: " +
+    blankets +
+    " — " +
+    blanketStatus +
+
+    "<br><br>" +
+
+    "📦 Overall: " +
+
+    "<span class='" +
+    className +
+    "'>" +
+    overall +
+    "</span>";
+
+}
+
+
+/* =====================================================
+DISASTER MAP
+===================================================== */
+
+function loadDisasterMap(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Please get your location first.");
+
+        return;
+    }
+
+    if(disasterMap){
+
+        disasterMap.remove();
+
+    }
+
+    disasterMap =
+    L.map("disasterMap").setView(
+        [
+            currentLatitude,
+            currentLongitude
+        ],
+        13
+    );
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom:19,
+            attribution:"© OpenStreetMap"
+        }
+    ).addTo(disasterMap);
+
+    L.marker([
+        currentLatitude,
+        currentLongitude
+    ])
+    .addTo(disasterMap)
+    .bindPopup("📍 Your Location")
+    .openPopup();
+
+    let safeCircle =
+    L.circle(
+        [
+            currentLatitude + .01,
+            currentLongitude + .01
+        ],
+        {
+            radius:500,
+            color:"green"
+        }
+    )
+    .addTo(disasterMap);
+
+    safeCircle.bindPopup(
+        "🏠 Suggested Safe Zone"
+    );
+
+    let disasterCircle =
+    L.circle(
+        [
+            currentLatitude - .008,
+            currentLongitude - .006
+        ],
+        {
+            radius:700,
+            color:"red"
+        }
+    )
+    .addTo(disasterMap);
+
+    disasterCircle.bindPopup(
+        "⚠️ Monitor This Area"
+    );
+
+    document.getElementById(
+        "mapResult"
+    ).innerHTML =
+
+    "🗺️ Disaster map loaded.<br>" +
+    "📍 Your location marked.<br>" +
+    "🏠 Safe zone shown.<br>" +
+    "⚠️ Risk monitoring area shown.";
+
+}
+
+
+/* =====================================================
+NOTIFICATIONS
+===================================================== */
+
+async function enableNotifications(){
+
+    if(!("Notification" in window)){
+
+        alert(
+            "🔔 Notifications are not supported."
+        );
+
+        return;
+    }
+
+    let permission =
+    await Notification.requestPermission();
+
+    document.getElementById(
+        "alertResult"
+    ).innerHTML =
+
+    "🔔 Notification permission: " +
+    permission;
+
+}
+
+
+function showEmergencyAlert(message){
+
+    let box =
+    document.getElementById("globalAlert");
+
+    box.style.display = "block";
+
+    box.innerHTML =
+    "🚨 " + message;
+
+    let alerts =
+    getStoredArray("alerts");
+
+    alerts.push({
+
+        message:message,
+
+        time:new Date().toLocaleString()
+
+    });
+
+    saveStoredArray(
+        "alerts",
+        alerts
+    );
+
+    if(
+        "Notification" in window &&
+        Notification.permission === "granted"
+    ){
+
+        new Notification(
+            "Smart Disaster Alert",
+            {
+                body:message
+            }
+        );
+
+    }
+
+}
+
+
+function testEmergencyAlert(){
+
+    showEmergencyAlert(
+        "Test emergency notification."
+    );
+
+    document.getElementById(
+        "alertResult"
+    ).innerHTML =
+    "🚨 Test alert sent.";
+}
+
+
+/* =====================================================
+SAFE ZONE
+===================================================== */
+
+function findSafeZone(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Get your location first.");
+
+        return;
+    }
+
+    let safeLat =
+    currentLatitude + .01;
+
+    let safeLng =
+    currentLongitude + .01;
+
+    let url =
+    "https://www.google.com/maps/dir/?api=1" +
+    "&origin=" +
+    currentLatitude +
+    "," +
+    currentLongitude +
+    "&destination=" +
+    safeLat +
+    "," +
+    safeLng +
+    "&travelmode=walking";
+
+    document.getElementById(
+        "safeZoneResult"
+    ).innerHTML =
+
+    "🏠 Suggested Safe Zone<br>" +
+
+    "📍 Coordinates: " +
+    safeLat.toFixed(6) +
+    ", " +
+    safeLng.toFixed(6) +
+
+    "<br><br>" +
+
+    "<a href='" +
+    url +
+    "' target='_blank'>" +
+    "🧭 Open Evacuation Route" +
+    "</a>";
+
+}
+
+
+function openEvacuationRoute(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Get location first.");
+
+        return;
+    }
+
+    let destination =
+    document.getElementById(
+        "destination"
+    ).value.trim();
+
+    if(!destination){
+
+        destination =
+        "emergency shelter near me";
+
+    }
+
+    let url =
+    "https://www.google.com/maps/dir/?api=1" +
+    "&origin=" +
+    currentLatitude +
+    "," +
+    currentLongitude +
+    "&destination=" +
+    encodeURIComponent(destination) +
+    "&travelmode=walking";
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* =====================================================
+ACCESSIBILITY
+===================================================== */
+
+function openAccessibleHospital(){
+
+    document.getElementById(
+        "accessResult"
+    ).innerHTML =
+    "🏥 Opening accessible hospitals...";
+
+    window.open(
+        "https://www.google.com/maps/search/accessible+hospital+near+me",
+        "_blank"
+    );
+
+}
+
+
+function openAccessibleShelter(){
+
+    document.getElementById(
+        "accessResult"
+    ).innerHTML =
+    "🏠 Opening accessible shelters...";
+
+    window.open(
+        "https://www.google.com/maps/search/accessible+emergency+shelter+near+me",
+        "_blank"
+    );
+
+}
+
+
+function openAccessibleRoute(){
+
+    let destination =
+    document.getElementById(
+        "destination"
+    ).value.trim();
+
+    if(!destination){
+
+        alert("🎯 Enter destination first.");
+
+        return;
+    }
+
+    window.open(
+        "https://www.google.com/maps/dir/?api=1" +
+        "&destination=" +
+        encodeURIComponent(destination),
+        "_blank"
+    );
+
+}
+
+
+/* =====================================================
+SOS
+===================================================== */
+
+function sendSOS(){
+
+    let ok =
+    confirm(
+        "🚨 EMERGENCY\n\n" +
+        "Call Emergency Services 112?"
+    );
+
+    if(ok){
+
+        showEmergencyAlert(
+            "SOS activated."
+        );
+
+        window.location.href =
+        "tel:112";
+
+    }
+
+}
+
+
+function openEmergencyHospital(){
+
+    document.getElementById(
+        "emergencyResult"
+    ).innerHTML =
+    "🏥 Opening nearby hospitals...";
+
+    window.open(
+        "https://www.google.com/maps/search/hospital+near+me",
+        "_blank"
+    );
+
+}
+
+
+function openEmergencyShelter(){
+
+    document.getElementById(
+        "emergencyResult"
+    ).innerHTML =
+    "🏠 Opening emergency shelters...";
+
+    window.open(
+        "https://www.google.com/maps/search/emergency+shelter+near+me",
+        "_blank"
+    );
+
+}
+
+
+async function shareEmergencyLocation(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Get your location first.");
+
+        return;
+    }
+
+    let mapLink =
+    "https://www.google.com/maps/search/?api=1" +
+    "&query=" +
+    currentLatitude +
+    "," +
+    currentLongitude;
+
+    let message =
+    "🚨 EMERGENCY LOCATION\n" +
+    mapLink;
+
+    if(navigator.share){
+
+        try{
+
+            await navigator.share({
+
+                title:"Emergency Location",
+
+                text:message
+
+            });
+
+        }catch(error){}
+
+    }else{
+
+        alert(message);
+
+    }
+
+}
+
+
+/* =====================================================
+RESCUE REQUEST
+===================================================== */
+
+function submitRescueRequest(){
+
+    let type =
+    document.getElementById(
+        "rescueType"
+    ).value;
+
+    let people =
+    Number(
+        document.getElementById(
+            "rescuePeople"
+        ).value
+    );
+
+    let priority =
+    document.getElementById(
+        "rescuePriority"
+    ).value;
+
+    let description =
+    document.getElementById(
+        "rescueDescription"
+    ).value.trim();
+
+    if(!type || people <= 0){
+
+        alert(
+            "⚠️ Select emergency type and people count."
+        );
+
+        return;
+    }
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert(
+            "📍 Get your location first."
+        );
+
+        return;
+    }
+
+    let requests =
+    getStoredArray(
+        "rescueRequests"
+    );
+
+    let request = {
+
+        id:
+        "RES-" +
+        Date.now(),
+
+        type:type,
+
+        people:people,
+
+        priority:priority,
+
+        description:
+        description || "No description",
+
+        latitude:
+        currentLatitude,
+
+        longitude:
+        currentLongitude,
+
+        status:"PENDING",
+
+        time:
+        new Date().toLocaleString()
+
+    };
+
+    requests.push(request);
+
+    saveStoredArray(
+        "rescueRequests",
+        requests
+    );
+
+    document.getElementById(
+        "rescueResult"
+    ).innerHTML =
+
+    "✅ <b>Rescue Request Created</b>" +
+
+    "<br>🆔 Request ID: " +
+    request.id +
+
+    "<br>🚨 Type: " +
+    type +
+
+    "<br>👥 People: " +
+    people +
+
+    "<br>Priority: " +
+    priority +
+
+    "<br>Status: " +
+    request.status +
+
+    "<br>📍 " +
+    currentLatitude.toFixed(6) +
+    ", " +
+    currentLongitude.toFixed(6);
+
+    loadAdminDashboard();
+
+}
+
+
+/* =====================================================
+ROAD REPORT
+===================================================== */
+
+function getReportLocation(){
+
+    if(!navigator.geolocation){
+
+        alert("❌ GPS not supported.");
+
+        return;
+    }
+
+    document.getElementById(
+        "reportLocation"
+    ).innerHTML =
+    "📍 Detecting location...";
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position){
+
+            reportLatitude =
+            position.coords.latitude;
+
+            reportLongitude =
+            position.coords.longitude;
+
+            document.getElementById(
+                "reportLocation"
+            ).innerHTML =
+
+            "📍 Problem Location Detected" +
+
+            "<br>Latitude: " +
+            reportLatitude.toFixed(6) +
+
+            "<br>Longitude: " +
+            reportLongitude.toFixed(6);
+
+        },
+
+        function(){
+
+            document.getElementById(
+                "reportLocation"
+            ).innerHTML =
+            "❌ Location permission denied.";
+
+        }
+
+    );
+
+}
+
+
+function previewReportPhoto(){
+
+    let file =
+    document.getElementById(
+        "reportPhoto"
+    ).files[0];
+
+    let preview =
+    document.getElementById(
+        "photoPreview"
+    );
+
+    if(!file){
+
+        preview.style.display =
+        "none";
+
+        return;
+    }
+
+    let reader =
+    new FileReader();
+
+    reader.onload =
+    function(event){
+
+        preview.src =
+        event.target.result;
+
+        preview.style.display =
+        "block";
+
+    };
+
+    reader.readAsDataURL(file);
+
+}
+
+
+function submitRoadReport(){
+
+    let type =
+    document.getElementById(
+        "problemType"
+    ).value;
+
+    let description =
+    document.getElementById(
+        "reportDescription"
+    ).value.trim();
+
+    let photo =
+    document.getElementById(
+        "reportPhoto"
+    ).files[0];
+
+    if(!type){
+
+        alert("⚠️ Select a problem.");
+
+        return;
+    }
+
+    if(
+        reportLatitude === null ||
+        reportLongitude === null
+    ){
+
+        alert(
+            "📍 Get problem location first."
+        );
+
+        return;
+    }
+
+    let reports =
+    getStoredArray("roadReports");
+
+    let report = {
+
+        id:
+        "ROAD-" +
+        Date.now(),
+
+        type:type,
+
+        description:
+        description || "No description",
+
+        photo:
+        photo ? photo.name : "Not attached",
+
+        latitude:
+        reportLatitude,
+
+        longitude:
+        reportLongitude,
+
+        time:
+        new Date().toLocaleString()
+
+    };
+
+    reports.push(report);
+
+    saveStoredArray(
+        "roadReports",
+        reports
+    );
+
+    document.getElementById(
+        "reportResult"
+    ).innerHTML =
+
+    "✅ <b>Road Report Created</b>" +
+
+    "<br>🆔 " +
+    report.id +
+
+    "<br>🚧 " +
+    report.type +
+
+    "<br>📷 " +
+    report.photo +
+
+    "<br>📍 " +
+    report.latitude.toFixed(6) +
+    ", " +
+    report.longitude.toFixed(6);
+
+    loadAdminDashboard();
+
+}
+
+
+/* =====================================================
+RELIEF
+===================================================== */
+
+function addReliefDistribution(){
+
+    let area =
+    document.getElementById(
+        "reliefArea"
+    ).value.trim();
+
+    let type =
+    document.getElementById(
+        "reliefType"
+    ).value;
+
+    let quantity =
+    Number(
+        document.getElementById(
+            "reliefQuantity"
+        ).value
+    );
+
+    if(!area || quantity <= 0){
+
+        alert(
+            "⚠️ Enter area and quantity."
+        );
+
+        return;
+    }
+
+    let relief =
+    getStoredArray("relief");
+
+    let record = {
+
+        id:
+        "REL-" +
+        Date.now(),
+
+        area:area,
+
+        type:type,
+
+        quantity:quantity,
+
+        status:"DISTRIBUTED",
+
+        time:
+        new Date().toLocaleString()
+
+    };
+
+    relief.push(record);
+
+    saveStoredArray(
+        "relief",
+        relief
+    );
+
+    document.getElementById(
+        "reliefResult"
+    ).innerHTML =
+
+    "✅ Relief distribution recorded." +
+
+    "<br>🆔 " +
+    record.id +
+
+    "<br>📍 Area: " +
+    area +
+
+    "<br>📦 " +
+    type +
+
+    "<br>Quantity: " +
+    quantity +
+
+    "<br>📊 Status: " +
+    record.status;
+
+    loadAdminDashboard();
+
+}
+
+
+/* =====================================================
+HOSPITAL STATUS
+===================================================== */
+
+function loadHospitalStatus(){
+
+    /*
+      Demo capacity data.
+      Real hospital APIs/backend can replace this.
+    */
+
+    let hospitals = [
+
+        {
+            name:"Nearest Emergency Hospital",
+            beds:12,
+            doctors:5,
+            ambulance:2,
+            status:"OPEN"
+        },
+
+        {
+            name:"Community Medical Center",
+            beds:7,
+            doctors:3,
+            ambulance:1,
+            status:"OPEN"
+        },
+
+        {
+            name:"District Emergency Hospital",
+            beds:2,
+            doctors:2,
+            ambulance:1,
+            status:"LIMITED"
+        }
+
+    ];
+
+    let html = "";
+
+    hospitals.forEach(function(h){
+
+        let className =
+        h.beds <= 2
+        ? "high"
+        : h.beds <= 5
+        ? "medium"
+        : "safe";
+
+        html +=
+
+        "<div class='item'>" +
+
+        "🏥 <b>" +
+        h.name +
+        "</b>" +
+
+        "<br>🛏️ Available Beds: " +
+        "<span class='" +
+        className +
+        "'>" +
+        h.beds +
+        "</span>" +
+
+        "<br>👨‍⚕️ Doctors: " +
+        h.doctors +
+
+        "<br>🚑 Ambulances: " +
+        h.ambulance +
+
+        "<br>📊 Status: " +
+        h.status +
+
+        "</div>";
+
+    });
+
+    document.getElementById(
+        "hospitalStatus"
+    ).innerHTML =
+
+    html +
+
+    "<small>" +
+    "⚠️ Prototype capacity data. " +
+    "Connect hospital authority API for real-time official capacity." +
+    "</small>";
+
+}
+
+
+/* =====================================================
+FINDER
+===================================================== */
+
+function findHospital(){
+
+    document.getElementById(
+        "finderResult"
+    ).innerHTML =
+    "🏥 Opening nearby hospitals...";
+
+    window.open(
+        "https://www.google.com/maps/search/hospital+near+me",
+        "_blank"
+    );
+
+}
+
+
+function findShelter(){
+
+    document.getElementById(
+        "finderResult"
+    ).innerHTML =
+    "🏠 Opening nearby shelters...";
+
+    window.open(
+        "https://www.google.com/maps/search/emergency+shelter+near+me",
+        "_blank"
+    );
+
+}
+
+
+function findRescueCenter(){
+
+    document.getElementById(
+        "finderResult"
+    ).innerHTML =
+    "🚑 Opening nearby rescue services...";
+
+    window.open(
+        "https://www.google.com/maps/search/rescue+center+near+me",
+        "_blank"
+    );
+
+}
+
+
+function openCurrentLocationMap(){
+
+    if(
+        currentLatitude === null ||
+        currentLongitude === null
+    ){
+
+        alert("📍 Get your location first.");
+
+        return;
+    }
+
+    let url =
+    "https://www.google.com/maps/search/?api=1" +
+    "&query=" +
+    currentLatitude +
+    "," +
+    currentLongitude;
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* =====================================================
+AI ASSISTANT
+===================================================== */
+
+function handleChatKey(event){
+
+    if(event.key === "Enter"){
+
+        sendChatMessage();
+
+    }
+
+}
+
+
+function addChatMessage(
+    message,
+    type
+){
+
+    let box =
+    document.getElementById(
+        "chatBox"
+    );
+
+    let div =
+    document.createElement(
+        "div"
+    );
+
+    div.className =
+    type === "user"
+    ? "userMsg"
+    : "botMsg";
+
+    div.innerHTML =
+    message;
+
+    box.appendChild(div);
+
+    box.scrollTop =
+    box.scrollHeight;
+
+}
+
+
+function getAssistantResponse(text){
+
+    let message =
+    text.toLowerCase();
+
+    let tamil =
+    appLanguage === "ta";
+
+    if(
+        message.includes("sos") ||
+        message.includes("emergency") ||
+        message.includes("112")
+    ){
+
+        return tamil
+
+        ? "🚨 அவசர நிலை என்றால் SOS button மூலம் emergency service-ஐ தொடர்பு கொள்ளுங்கள்."
+
+        : "🚨 If you are in immediate danger, use the SOS button to contact emergency services.";
+
+    }
+
+    if(
+        message.includes("weather") ||
+        message.includes("rain") ||
+        message.includes("வானிலை") ||
+        message.includes("மழை")
+    ){
+
+        return tamil
+
+        ? "🌦️ முதலில் location பெறுங்கள். பிறகு Live Weather Dashboard-ஐ பயன்படுத்துங்கள்."
+
+        : "🌦️ Get your location first, then use the Live Weather Dashboard.";
+
+    }
+
+    if(
+        message.includes("flood") ||
+        message.includes("வெள்ளம்")
+    ){
+
+        return tamil
+
+        ? "🌊 Flood Risk section-ல் rainfall மற்றும் probability அடிப்படையில் risk check செய்யலாம்."
+
+        : "🌊 Use Flood Risk to check rainfall and precipitation probability.";
+
+    }
+
+    if(
+        message.includes("landslide") ||
+        message.includes("மண் சரிவு")
+    ){
+
+        return tamil
+
+        ? "🏔️ Landslide Risk section-ல் rainfall-based assessment செய்யலாம்."
+
+        : "🏔️ Use Landslide Risk for a rainfall-based assessment.";
+
+    }
+
+    if(
+        message.includes("hospital") ||
+        message.includes("மருத்துவமனை")
+    ){
+
+        return tamil
+
+        ? "🏥 Hospital Finder மூலம் nearby hospitals-ஐ தேடலாம்."
+
+        : "🏥 Use Hospital Finder to search nearby hospitals.";
+
+    }
+
+    if(
+        message.includes("shelter") ||
+        message.includes("பாதுகாப்பு")
+    ){
+
+        return tamil
+
+        ? "🏠 Safe Zone மற்றும் Emergency Shelter options பயன்படுத்துங்கள்."
+
+        : "🏠 Use Safe Zone and Emergency Shelter options.";
+
+    }
+
+    if(
+        message.includes("rescue") ||
+        message.includes("மீட்பு")
+    ){
+
+        return tamil
+
+        ? "🚑 Rescue Request பகுதியில் emergency type, people count மற்றும் location கொடுத்து request அனுப்பலாம்."
+
+        : "🚑 Use Rescue Request to submit emergency type, people count and location.";
+
+    }
+
+    if(
+        message.includes("food") ||
+        message.includes("water") ||
+        message.includes("supply")
+    ){
+
+        return tamil
+
+        ? "📦 Food மற்றும் Emergency Supply sections-ல் resource availability check செய்யலாம்."
+
+        : "📦 Use Food and Emergency Supply sections to check resources.";
+
+    }
+
+    if(
+        message.includes("road") ||
+        message.includes("pothole")
+    ){
+
+        return tamil
+
+        ? "📱 Road Reporting பகுதியில் problem, photo மற்றும் location submit செய்யலாம்."
+
+        : "📱 Use Road Reporting to submit the problem, photo and location.";
+
+    }
+
+    if(
+        message.includes("route") ||
+        message.includes("map")
+    ){
+
+        return tamil
+
+        ? "🗺️ Destination கொடுத்து Smart Route Planning பயன்படுத்துங்கள்."
+
+        : "🗺️ Enter a destination and use Smart Route Planning.";
+
+    }
+
+    return tamil
+
+    ? "🤖 நான் weather, flood, landslide, hospital, shelter, SOS, rescue, supplies மற்றும் route பற்றி உதவ முடியும்."
+
+    : "🤖 I can help with weather, flood, landslide, hospital, shelter, SOS, rescue, supplies and routes.";
+
+}
+
+
+function sendChatMessage(){
+
+    let input =
+    document.getElementById(
+        "chatInput"
+    );
+
+    let text =
+    input.value.trim();
+
+    if(!text){
+
+        return;
+    }
+
+    addChatMessage(
+        "👤 " + text,
+        "user"
+    );
+
+    let response =
+    getAssistantResponse(text);
+
+    lastBotResponse =
+    response;
+
+    setTimeout(
+
+        function(){
+
+            addChatMessage(
+                response,
+                "bot"
+            );
+
+        },
+
+        250
+
+    );
+
+    input.value = "";
+
+}
+
+
+/* =====================================================
+VOICE
+===================================================== */
+
+function startVoiceInput(){
+
+    let SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+
+        alert(
+            "🎙️ Voice input is not supported."
+        );
+
+        return;
+    }
+
+    let recognition =
+    new SpeechRecognition();
+
+    recognition.lang =
+    appLanguage === "ta"
+    ? "ta-IN"
+    : "en-IN";
+
+    recognition.interimResults =
+    false;
+
+    recognition.onresult =
+    function(event){
+
+        let text =
+        event.results[0][0].transcript;
+
+        document.getElementById(
+            "chatInput"
+        ).value = text;
+
+        sendChatMessage();
+
+    };
+
+    recognition.onerror =
+    function(){
+
+        alert(
+            "❌ Voice input failed."
+        );
+
+    };
+
+    recognition.start();
+
+}
+
+
+function speakLastResponse(){
+
+    if(!("speechSynthesis" in window)){
+
+        alert(
+            "🔊 Voice output is not supported."
+        );
+
+        return;
+    }
+
+    let speech =
+    new SpeechSynthesisUtterance(
+        lastBotResponse
+    );
+
+    speech.lang =
+    appLanguage === "ta"
+    ? "ta-IN"
+    : "en-IN";
+
+    window.speechSynthesis.cancel();
+
+    window.speechSynthesis.speak(
+        speech
+    );
+
+}
+
+
+/* =====================================================
+ADMIN DASHBOARD
+===================================================== */
+
+function loadAdminDashboard(){
+
+    let reports =
+    getStoredArray(
+        "roadReports"
+    );
+
+    let rescue =
+    getStoredArray(
+        "rescueRequests"
+    );
+
+    let relief =
+    getStoredArray(
+        "relief"
+    );
+
+    let alerts =
+    getStoredArray(
+        "alerts"
+    );
+
+    document.getElementById(
+        "statReports"
+    ).textContent =
+    reports.length;
+
+    document.getElementById(
+        "statRescue"
+    ).textContent =
+    rescue.length;
+
+    document.getElementById(
+        "statRelief"
+    ).textContent =
+    relief.length;
+
+    document.getElementById(
+        "statAlerts"
+    ).textContent =
+    alerts.length;
+
+    let pending =
+    rescue.filter(
+        r => r.status === "PENDING"
+    ).length;
+
+    document.getElementById(
+        "adminDetails"
+    ).innerHTML =
+
+    "📊 <b>System Summary</b>" +
+
+    "<br><br>" +
+
+    "🚧 Road Reports: " +
+    reports.length +
+
+    "<br>🚑 Rescue Requests: " +
+    rescue.length +
+
+    "<br>⏳ Pending Rescue: " +
+    pending +
+
+    "<br>📦 Relief Records: " +
+    relief.length +
+
+    "<br>🔔 Alerts: " +
+    alerts.length +
+
+    "<br><br>" +
+
+    "💾 Data is stored locally in this browser.";
+
+}
+
+
+/* =====================================================
+LANGUAGE
+===================================================== */
+
+function changeLanguage(){
+
+    appLanguage =
+    document.getElementById(
+        "languageSelect"
+    ).value;
+
+    localStorage.setItem(
+        "appLanguage",
+        appLanguage
+    );
+
+    document.getElementById(
+        "languageStatus"
+    ).innerHTML =
+
+    appLanguage === "ta"
+
+    ? "🌐 மொழி: தமிழ்"
+
+    : "🌐 Language: English";
+
+}
+
+
+/* =====================================================
+PWA MANIFEST
+===================================================== */
+
+function createManifest(){
+
+    let manifest = {
+
+        name:
+        "Smart Disaster Management",
+
+        short_name:
+        "Smart Disaster",
+
+        start_url:
+        ".",
+
+        display:
+        "standalone",
+
+        background_color:
+        "#f4f7fb",
+
+        theme_color:
+        "#2563eb",
+
+        description:
+        "Smart Disaster Management Emergency System",
+
+        icons:[]
+
+    };
+
+    let blob =
+    new Blob(
+        [JSON.stringify(manifest)],
+        {
+            type:"application/manifest+json"
+        }
+    );
+
+    let url =
+    URL.createObjectURL(blob);
+
+    document.getElementById(
+        "manifestLink"
+    ).href = url;
+
+}
+
+
+/* =====================================================
+SERVICE WORKER
+===================================================== */
+
+function registerOfflineMode(){
+
+    if(!("serviceWorker" in navigator)){
+
+        return;
+    }
+
+    /*
+      Service workers require HTTPS or localhost.
+      This page therefore gracefully falls back
+      when opened directly as a local HTML file.
+    */
+
+    if(
+        location.protocol !== "https:" &&
+        location.hostname !== "localhost"
+    ){
+
+        document.getElementById(
+            "offlineResult"
+        ).innerHTML =
+
+        "📱 Offline Mode: Basic browser storage available.<br>" +
+        "For full PWA offline caching, run this page on HTTPS or localhost.";
+
+        return;
+    }
+
+    let swCode = `
+
+        const CACHE_NAME =
+        "smart-disaster-v1";
+
+        self.addEventListener(
+            "install",
+            event => {
+
+                self.skipWaiting();
+
+            }
+        );
+
+        self.addEventListener(
+            "activate",
+            event => {
+
+                event.waitUntil(
+                    self.clients.claim()
+                );
+
+            }
+        );
+
+        self.addEventListener(
+            "fetch",
+            event => {
+
+                event.respondWith(
+
+                    fetch(event.request)
+                    .catch(
+                        () =>
+                        caches.match(
+                            event.request
+                        )
+                    )
+
+                );
+
+            }
+        );
+
+    `;
+
+    let blob =
+    new Blob(
+        [swCode],
+        {
+            type:"application/javascript"
+        }
+    );
+
+    let swUrl =
+    URL.createObjectURL(blob);
+
+    navigator.serviceWorker.register(
+        swUrl
+    ).then(
+
+        function(){
+
+            document.getElementById(
+                "offlineResult"
+            ).innerHTML =
+            "✅ PWA offline service registered.";
+
+        }
+
+    ).catch(
+
+        function(){
+
+            document.getElementById(
+                "offlineResult"
+            ).innerHTML =
+            "⚠️ Offline service could not register.";
+
+        }
+
+    );
+
+}
+
+
+function installPWA(){
+
+    alert(
+        "📱 PWA installation depends on your browser. " +
+        "Use the browser menu → Add to Home Screen / Install App."
+    );
+
+}
+
+
+function checkOfflineStatus(){
+
+    let status =
+    navigator.onLine
+    ? "🟢 Online"
+    : "🔴 Offline";
+
+    document.getElementById(
+        "offlineResult"
+    ).innerHTML =
+
+    status +
+
+    "<br>💾 Local emergency data remains available.";
+
+}
+
+
+/* =====================================================
+INITIALIZE
+===================================================== */
+
+window.addEventListener(
+    "online",
+    function(){
+
+        document.getElementById(
+            "offlineResult"
+        ).innerHTML =
+        "🟢 Internet connection restored.";
+
+    }
+);
+
+
+window.addEventListener(
+    "offline",
+    function(){
+
+        document.getElementById(
+            "offlineResult"
+        ).innerHTML =
+        "🔴 Offline mode active. Local data remains available.";
+
+    }
+);
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        document.getElementById(
+            "languageSelect"
+        ).value =
+        appLanguage;
+
+        changeLanguage();
+
+        createManifest();
+
+        registerOfflineMode();
+
+        loadAdminDashboard();
+
+        loadHospitalStatus();
+
+        checkOfflineStatus();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
